@@ -1,0 +1,101 @@
+class Product:
+    def __init__(self, product_id, name, price, stock):
+        self.product_id = product_id
+        self.name = name
+        self.price = price
+        self.stock = stock
+
+class POS:
+    def __init__(self):
+        self.products = {}
+        self.cart = []
+        self.sales = []
+
+    def add_product(self, product_id, name, price, stock):
+        product = Product(product_id, name, price, stock)
+        self.products[product_id] = product
+
+    def update_product(self, product_id, name=None, price=None, stock=None):
+        if product_id in self.products:
+            if name:
+                self.products[product_id].name = name
+            if price:
+                self.products[product_id].price = price
+            if stock:
+                self.products[product_id].stock = stock
+
+    def delete_product(self, product_id):
+        if product_id in self.products:
+            del self.products[product_id]
+
+    def add_to_cart(self, product_id, quantity):
+        if product_id in self.products and self.products[product_id].stock >= quantity:
+            self.cart.append((product_id, quantity))
+            self.products[product_id].stock -= quantity
+        else:
+            print("Product not available or insufficient stock.")
+
+    def calculate_total(self):
+        total = 0
+        for product_id, quantity in self.cart:
+            total += self.products[product_id].price * quantity
+        return total
+
+    def process_payment(self, amount_paid):
+        total = self.calculate_total()
+        if amount_paid >= total:
+            change = amount_paid - total
+            self.sales.append(self.cart.copy())
+            self.cart.clear()
+            return change
+        else:
+            print("Insufficient payment.")
+            return None
+
+    def print_receipt(self):
+        print("Receipt:")
+        for product_id, quantity in self.cart:
+            product = self.products[product_id]
+            print(f"{product.name} - {quantity} x {product.price} = {quantity * product.price}")
+        print(f"Total: {self.calculate_total()}")
+
+    def daily_sales_report(self):
+        print("Daily Sales Report:")
+        for transaction in self.sales:
+            for product_id, quantity in transaction:
+                product = self.products[product_id]
+                print(f"{product.name} - {quantity} x {product.price} = {quantity * product.price}")
+            print("---")
+# Demonstrating usage
+def main():
+    pos = POS()
+
+    # Add products
+    pos.add_product(1, "Apple", 0.50, 100)
+    pos.add_product(2, "Banana", 0.30, 150)
+    pos.add_product(3, "Orange", 0.80, 200)
+
+    # Update product
+    pos.update_product(2, price=0.35)
+
+    # Add items to cart
+    pos.add_to_cart(1, 5)
+    pos.add_to_cart(2, 10)
+
+    # Calculate total
+    total = pos.calculate_total()
+    print(f"Total: {total}")
+
+    # Process payment
+    change = pos.process_payment(10)
+    if change is not None:
+        print(f"Change: {change}")
+
+    # Print receipt
+    pos.print_receipt()
+
+    # Daily sales report
+    pos.daily_sales_report()
+
+if __name__ == "__main__":
+    main()
